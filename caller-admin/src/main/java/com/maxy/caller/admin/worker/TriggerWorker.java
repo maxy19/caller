@@ -8,6 +8,7 @@ import com.maxy.caller.admin.cache.CacheService;
 import com.maxy.caller.admin.service.AdminWorker;
 import com.maxy.caller.bo.TaskDetailInfoBO;
 import com.maxy.caller.common.utils.JSONUtils;
+import com.maxy.caller.common.utils.timewheel.HashedWheelTimer;
 import com.maxy.caller.core.config.GeneralConfigCenter;
 import com.maxy.caller.core.config.ThreadPoolConfig;
 import com.maxy.caller.core.config.ThreadPoolRegisterCenter;
@@ -16,7 +17,6 @@ import com.maxy.caller.core.netty.protocol.ProtocolMsg;
 import com.maxy.caller.core.service.TaskBaseInfoService;
 import com.maxy.caller.core.service.TaskDetailInfoService;
 import com.maxy.caller.core.service.TaskLogService;
-import com.maxy.caller.core.timer.CacheTimer;
 import com.maxy.caller.core.utils.CallerUtils;
 import com.maxy.caller.dto.CallerTaskDTO;
 import com.maxy.caller.pojo.Value;
@@ -95,8 +95,8 @@ public class TriggerWorker implements AdminWorker {
     /**
      * 时间轮
      */
-    private CacheTimer delayTimer = CacheTimer.toEntity();
-    private CacheTimer timeOutTimer = CacheTimer.toEntity();
+    private HashedWheelTimer delayTimer = new HashedWheelTimer(1, 256, 2 * Runtime.getRuntime().availableProcessors());
+    private HashedWheelTimer timeOutTimer = new HashedWheelTimer(1, 1024, 2 * Runtime.getRuntime().availableProcessors());
 
     @PostConstruct
     public void init() {
@@ -215,7 +215,7 @@ public class TriggerWorker implements AdminWorker {
                 continue;
             }
             log.info("invoke#任务Id[{}]放入定时轮.", dto.getDetailTaskId());
-            delayTimer.newTimeout(timeout -> {
+            delayTimer.schedule(() -> {
                 remoteClientMethod(context);
             }, dto.getExecutionTime().getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
         }
@@ -280,7 +280,7 @@ public class TriggerWorker implements AdminWorker {
 
     private void checkTimeOut(Pair<TaskDetailInfoBO, CallerTaskDTO> context, Channel channel, ProtocolMsg request) {
         //时间轮处理超时任务
-        timeOutTimer.newTimeout(timeout -> {
+        timeOutTimer.schedule(()-> {
             //key必须存在才能修改value值,如果已超时，先加个乐观锁,然后处理.
             Preconditions.checkArgument(request.getRequestId() != null);
             Value<Boolean> flag = new Value<>(true);

@@ -28,13 +28,13 @@ public class TaskDetailInfoTest {
     @Test
     public void batchInsert() {
         List<TaskDetailInfoBO> list = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < 3000; i++) {
             TaskDetailInfoBO taskDetailInfoBO = new TaskDetailInfoBO();
             taskDetailInfoBO.setGroupKey("taobao");
             taskDetailInfoBO.setBizKey("order");
             taskDetailInfoBO.setTopic("clsExpireOrder");
             taskDetailInfoBO.setExecutionParam("test"+i);
-            taskDetailInfoBO.setExecutionTime(LocalDateUtils.plus(LocalDateTime.now(), 60, ChronoUnit.SECONDS));
+            taskDetailInfoBO.setExecutionTime(LocalDateUtils.plus(LocalDateTime.now(), 30, ChronoUnit.SECONDS));
             taskDetailInfoBO.setExecutionStatus((byte) 1);
             taskDetailInfoBO.setTimeout(4000);
             taskDetailInfoBO.setRetryNum((byte) 3);
