@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import static com.sun.xml.internal.fastinfoset.util.ValueArray.MAXIMUM_CAPACITY;
 
 /**
  * 时间轮定时器
@@ -332,7 +331,7 @@ public class HashedWheelTimer implements Timer {
             return tasks;
         }
     }
-
+    private static final int MAXIMUM_CAPACITY = 1 << 30;
     /**
      * 将大小格式化为 2的N次
      * @param cap 初始大小
